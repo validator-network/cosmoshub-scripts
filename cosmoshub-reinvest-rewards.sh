@@ -15,8 +15,11 @@
 
 KEY=""                                  # This is the key you wish to use for signing transactions, listed in first column of "gaiacli keys list".
 PASSPHRASE=""                           # Only populate if you want to run the script periodically. This is UNSAFE and should only be done if you know what you are doing.
-VALIDATOR="cosmosvaloper1sxx9mszve0gaedz5ld7qdkjkfv8z992ax69k08"        # Default is Validator Network. Thank you for your patronage :-)
 SIGNING_DEVICE=""                       # Set to "--ledger" if you are using a Ledger for signing.
+DENOM="uatom"                           # Coin denominator is uatom ("microoatom"). 1 atom = 1000000 uatom.
+MINIMUM_DELEGATION_AMOUNT="25000000"    # Only perform delegations above this amount of uatom. Default: 25atom.
+RESERVATION_AMOUNT="100000000"          # Keep this amount of uatom in account. Default: 100atom.
+VALIDATOR="cosmosvaloper1sxx9mszve0gaedz5ld7qdkjkfv8z992ax69k08"        # Default is Validator Network. Thank you for your patronage :-)
 
 ##############################################################################################################################################################
 
@@ -25,9 +28,6 @@ SIGNING_DEVICE=""                       # Set to "--ledger" if you are using a L
 # Sensible defaults.
 ##############################################################################################################################################################
 
-DENOM="uatom"                                   # Coin denominator is uatom ("microoatom"). 1 atom = 1000000 uatom.
-MINIMUM_DELEGATION_AMOUNT="25000000"            # Only perform delegations above this amount of uatom. Default: 25atom.
-RESERVATION_AMOUNT="100000000"                  # Keep this amount of uatom in account. Default: 100atom.
 CHAIN_ID="cosmoshub-1"                          # Current chain id.
 NODE="https://cosmoshub.validator.network:443"  # Either run a local full node or choose one you trust.
 GAS_PRICES="0.025uatom"                         # Gas prices to pay for transaction.
