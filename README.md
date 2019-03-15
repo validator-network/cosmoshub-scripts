@@ -25,8 +25,10 @@ Now use your favorite text editor to change the *User settings* section of the f
 
 KEY="testkey1"
 PASSPHRASE=""
-VALIDATOR="cosmosvaloper1sxx9mszve0gaedz5ld7qdkjkfv8z992ax69k08"
 SIGNING_DEVICE=""
+MINIMUM_DELEGATION_AMOUNT="25000000"
+RESERVATION_AMOUNT="100000000"
+VALIDATOR="cosmosvaloper1sxx9mszve0gaedz5ld7qdkjkfv8z992ax69k08"
 
 ##############################################################################
 ```
@@ -35,10 +37,9 @@ You should modify the `KEY` setting so that it matches the output of the NAME: c
 
 ![keychain](https://validator.network/img/gaiacli01.png "gaiacli keys list output")
 
-If you are using a Ledger device, also specify `SIGNING_DEVICE="--ledger"`.
+If you are using a Ledger device, also specify `SIGNING_DEVICE="--ledger"`. If you instead are are using a local password-protected key, you __do not need__ to specify it as the script will prompt you for it.
 
-If you are using a local password-protected key, you __do not need__ to specify it as the script will prompt you for it.
-The PASSPHRASE setting is merely provided as a convenience.
+Take care to specify the `RESERVATION_AMOUNT` which is the minimum amount of uatoms that will remain available in your account.
 
 You can delegate to any validator you prefer by changing `VALIDATOR` variable.
 
