@@ -2,7 +2,7 @@
 
 Courtesy of [Validator🌐Network](https://validator.network).
 
-The provided script enable delegators to periodically claim all their staking rewards and reinvest them, to receive compounded interest.
+The provided script enable delegators to claim all their staking rewards and reinvest them, to receive compounded interest.
 
 You do not need to run a local full node as the script defaults to using the https://cosmoshub.validator.network:443 RPC endpoint.
 
