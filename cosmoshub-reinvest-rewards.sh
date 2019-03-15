@@ -36,6 +36,13 @@ GAS_ADJUSTMENT="1.25"                           # Adjustment for estimated gas
 ##############################################################################################################################################################
 
 
+# Use first command line argument in case KEY is not defined.
+if [ -z "${KEY}" ] && [ ! -z "${1}" ]
+then
+  KEY=${1}
+fi
+
+
 # Get current account balance.
 ADDRESS=$(gaiacli keys show ${KEY} --address)
 ACCOUNT_STATUS=$(gaiacli query account ${ADDRESS} --chain-id ${CHAIN_ID} --node ${NODE} --output json)

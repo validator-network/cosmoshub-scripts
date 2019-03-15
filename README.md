@@ -37,6 +37,8 @@ You should modify the `KEY` setting so that it matches the output of the NAME: c
 
 ![keychain](https://validator.network/img/gaiacli01.png "gaiacli keys list output")
 
+If you wish to use the script with multiple keys, you can leave the `KEY` setting empty and pass it on the command line instead.
+
 If you are using a Ledger device, also specify `SIGNING_DEVICE="--ledger"`. If you instead are are using a local password-protected key, you __do not need__ to specify it as the script will prompt you for it.
 
 Take care to specify the `RESERVATION_AMOUNT` which is the minimum amount of uatoms that will remain available in your account.
