@@ -3,7 +3,7 @@
 
 # This script comes without warranties of any kind. Use at your own risk.
 
-# The purpose of this script is to withdraw staked rewards (if any) and delegate them to an appointed validator. This way you can reinvest (compound) received rewards.
+# The purpose of this script is to withdraw rewards (if any) and delegate them to an appointed validator. This way you can reinvest (compound) rewards.
 # Cosmos Hub does currently not support automatic compounding but this is planned: https://github.com/cosmos/cosmos-sdk/issues/3448
 
 # Requirements: gaiacli and jq must be in the path.
