@@ -101,7 +101,7 @@ echo "  Details: ${VALIDATOR_DETAILS}"
 echo
 
 # Ask for passphrase to sign transactions.
-if [ -z "${SIGNING_DEVICE}"] && [ -z "${PASSPHRASE}" ]
+if [ -z "${SIGNING_DEVICE}" ] && [ -z "${PASSPHRASE}" ]
 then
     read -s -p "Enter passphrase required to sign for \"${KEY}\": " PASSPHRASE
     echo ""
