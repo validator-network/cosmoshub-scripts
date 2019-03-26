@@ -32,6 +32,7 @@ CHAIN_ID="cosmoshub-1"                          # Current chain id.
 NODE="https://cosmoshub.validator.network:443"  # Either run a local full node or choose one you trust.
 GAS_PRICES="0.025uatom"                         # Gas prices to pay for transaction.
 GAS_ADJUSTMENT="1.25"                           # Adjustment for estimated gas
+GAS_FLAGS="--gas auto --gas-prices ${GAS_PRICES} --gas-adjustment ${GAS_ADJUSTMENT}"
 
 ##############################################################################################################################################################
 
@@ -46,6 +47,7 @@ fi
 # Get current account balance.
 ADDRESS=$(gaiacli keys show ${KEY} --address)
 ACCOUNT_STATUS=$(gaiacli query account ${ADDRESS} --chain-id ${CHAIN_ID} --node ${NODE} --output json)
+ACCOUNT_SEQUENCE=$(echo ${ACCOUNT_STATUS} | jq -r ".value.sequence")
 ACCOUNT_BALANCE=$(echo ${ACCOUNT_STATUS} | jq -r ".value.coins[] | select(.denom == \"${DENOM}\") | .amount" || true)
 if [ -z "${ACCOUNT_BALANCE}" ]
 then
@@ -108,11 +110,11 @@ then
 fi
 
 # Run transactions
-GAS_FLAGS="--gas auto --gas-prices ${GAS_PRICES} --gas-adjustment ${GAS_ADJUSTMENT}"
-echo "Withdrawing rewards..."
-echo ${PASSPHRASE} | gaiacli tx distr withdraw-all-rewards --from ${KEY} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_DEVICE} --yes
-echo "Delegating..."
-echo ${PASSPHRASE} | gaiacli tx staking delegate ${VALIDATOR} ${DELEGATION_AMOUNT}${DENOM} --from ${KEY} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_DEVICE} --yes
+printf "Withdrawing rewards... "
+echo ${PASSPHRASE} | gaiacli tx distr withdraw-all-rewards --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_DEVICE}
+
+printf "Delegating... "
+echo ${PASSPHRASE} | gaiacli tx staking delegate ${VALIDATOR} ${DELEGATION_AMOUNT}${DENOM} --yes --async --from ${KEY} --sequence $((ACCOUNT_SEQUENCE + 1)) --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_DEVICE}
 
 echo
 echo "Have a Cosmic day!"
