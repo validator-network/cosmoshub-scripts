@@ -15,7 +15,6 @@
 
 KEY=""                                  # This is the key you wish to use for signing transactions, listed in first column of "gaiacli keys list".
 PASSPHRASE=""                           # Only populate if you want to run the script periodically. This is UNSAFE and should only be done if you know what you are doing.
-SIGNING_DEVICE=""                       # Set to "--ledger" if you are using a Ledger for signing.
 DENOM="uatom"                           # Coin denominator is uatom ("microoatom"). 1 atom = 1000000 uatom.
 MINIMUM_DELEGATION_AMOUNT="25000000"    # Only perform delegations above this amount of uatom. Default: 25atom.
 RESERVATION_AMOUNT="100000000"          # Keep this amount of uatom in account. Default: 100atom.
@@ -43,10 +42,18 @@ then
   KEY=${1}
 fi
 
+# Get information about key
+KEY_STATUS=$(gaiacli keys show ${KEY} --output json)
+KEY_TYPE=$(echo ${KEY_STATUS} | jq -r ".type")
+if [ "${KEY_TYPE}" == "ledger" ]
+then
+    SIGNING_FLAGS="--ledger"
+fi
+
 
 # Get current account balance.
-ADDRESS=$(gaiacli keys show ${KEY} --address)
-ACCOUNT_STATUS=$(gaiacli query account ${ADDRESS} --chain-id ${CHAIN_ID} --node ${NODE} --output json)
+ACCOUNT_ADDRESS=$(echo ${KEY_STATUS} | jq -r ".address")
+ACCOUNT_STATUS=$(gaiacli query account ${ACCOUNT_ADDRESS} --chain-id ${CHAIN_ID} --node ${NODE} --output json)
 ACCOUNT_SEQUENCE=$(echo ${ACCOUNT_STATUS} | jq -r ".value.sequence")
 ACCOUNT_BALANCE=$(echo ${ACCOUNT_STATUS} | jq -r ".value.coins[] | select(.denom == \"${DENOM}\") | .amount" || true)
 if [ -z "${ACCOUNT_BALANCE}" ]
@@ -56,7 +63,7 @@ then
 fi
 
 # Get available rewards.
-REWARDS_STATUS=$(gaiacli query distr rewards ${ADDRESS} --chain-id ${CHAIN_ID} --node ${NODE} --output json)
+REWARDS_STATUS=$(gaiacli query distr rewards ${ACCOUNT_ADDRESS} --chain-id ${CHAIN_ID} --node ${NODE} --output json)
 REWARDS_BALANCE=$(echo ${REWARDS_STATUS} | jq -r ".[] | select(.denom == \"${DENOM}\") | .amount" || true)
 if [ -z "${REWARDS_BALANCE}" ]
 then
@@ -78,8 +85,8 @@ fi
 
 # Display what we know so far.
 echo "======================================================"
-echo "Account: ${KEY}"
-echo "Address: ${ADDRESS}"
+echo "Account: ${KEY} (${KEY_TYPE})"
+echo "Address: ${ACCOUNT_ADDRESS}"
 echo "======================================================"
 echo "Account balance:   ${ACCOUNT_BALANCE}${DENOM}"
 echo "Available rewards: ${REWARDS_BALANCE}${DENOM}"
@@ -103,7 +110,7 @@ echo "  Details: ${VALIDATOR_DETAILS}"
 echo
 
 # Ask for passphrase to sign transactions.
-if [ -z "${SIGNING_DEVICE}" ] && [ -z "${PASSPHRASE}" ]
+if [ -z "${SIGNING_FLAGS}" ] && [ -z "${PASSPHRASE}" ]
 then
     read -s -p "Enter passphrase required to sign for \"${KEY}\": " PASSPHRASE
     echo ""
@@ -111,10 +118,10 @@ fi
 
 # Run transactions
 printf "Withdrawing rewards... "
-echo ${PASSPHRASE} | gaiacli tx distr withdraw-all-rewards --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_DEVICE}
+echo ${PASSPHRASE} | gaiacli tx distr withdraw-all-rewards --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS}
 
 printf "Delegating... "
-echo ${PASSPHRASE} | gaiacli tx staking delegate ${VALIDATOR} ${DELEGATION_AMOUNT}${DENOM} --yes --async --from ${KEY} --sequence $((ACCOUNT_SEQUENCE + 1)) --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_DEVICE}
+echo ${PASSPHRASE} | gaiacli tx staking delegate ${VALIDATOR} ${DELEGATION_AMOUNT}${DENOM} --yes --async --from ${KEY} --sequence $((ACCOUNT_SEQUENCE + 1)) --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS}
 
 echo
 echo "Have a Cosmic day!"
