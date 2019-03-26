@@ -15,13 +15,33 @@ curl -O https://raw.githubusercontent.com/block-finance/cosmoshub-scripts/master
 chmod +x cosmoshub-reinvest-rewards.sh
 ```
 
-The script has some default settings and only requires you to provide the name for the account you wish to work with. It must match the  output of the NAME: column of `gaiacli keys list`:
+### Enjoy the show
 
+The script has some default settings and only requires you to provide the name for the account you wish to work with.
+
+The name must match the output of the NAME: column of `gaiacli keys list`:  
 ![keychain](https://validator.network/img/gaiacli01.png "gaiacli keys list output")
 
-Pass the account name as the first parameter to the script: 
+You can now run the script:
 ```
 ./cosmoshub-reinvest-rewards.sh testkey1
+```
+
+and expect output such as:
+
+```
+======================================================
+Account: testkey1 (local)
+Address: cosmos1mjgh0rejtljxg8rurmxlrff0kk2ztxmgc8mvzj
+======================================================
+Account balance:   20000122217uatom
+Available rewards: 23588169uatom
+Net balance:       20023710386uatom
+Reservation:       100000000uatom
+
+You are about to delegate 19923710386uatom to cosmosvaloper1sxx9mszve0gaedz5ld7qdkjkfv8z992ax69k08:
+  Moniker: Validator🌐Network
+  Details: Highly resilient and secure validator operating out of Northern Europe. See website for terms of service.
 ```
 
 ### Customize settings (optional)
@@ -42,21 +62,3 @@ VALIDATOR="cosmosvaloper1sxx9mszve0gaedz5ld7qdkjkfv8z992ax69k08"
 Take care to specify the `RESERVATION_AMOUNT` which is the minimum amount of uatoms that will remain available in your account.
 
 You can delegate to any validator you prefer by changing `VALIDATOR` variable.
-
-### Enjoy the show
-
-You can now run the script and expect output such as:
-```
-======================================================
-Account: testkey1 (local)
-Address: cosmos1mjgh0rejtljxg8rurmxlrff0kk2ztxmgc8mvzj
-======================================================
-Account balance:   20000122217uatom
-Available rewards: 23588169uatom
-Net balance:       20023710386uatom
-Reservation:       100000000uatom
-
-You are about to delegate 19923710386uatom to cosmosvaloper1sxx9mszve0gaedz5ld7qdkjkfv8z992ax69k08:
-  Moniker: Validator🌐Network
-  Details: Highly resilient and secure validator operating out of Northern Europe. See website for terms of service.
-```
