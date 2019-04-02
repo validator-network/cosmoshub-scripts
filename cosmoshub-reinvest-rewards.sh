@@ -50,7 +50,6 @@ then
     SIGNING_FLAGS="--ledger"
 fi
 
-
 # Get current account balance.
 ACCOUNT_ADDRESS=$(echo ${KEY_STATUS} | jq -r ".address")
 ACCOUNT_STATUS=$(gaiacli query account ${ACCOUNT_ADDRESS} --chain-id ${CHAIN_ID} --node ${NODE} --output json)
@@ -64,18 +63,43 @@ fi
 
 # Get available rewards.
 REWARDS_STATUS=$(gaiacli query distr rewards ${ACCOUNT_ADDRESS} --chain-id ${CHAIN_ID} --node ${NODE} --output json)
-REWARDS_BALANCE=$(echo ${REWARDS_STATUS} | jq -r ".[] | select(.denom == \"${DENOM}\") | .amount" || true)
-if [ -z "${REWARDS_BALANCE}" ]
+if [ "${REWARDS_STATUS}" == "null" ]
 then
     # Empty response means zero balance.
     REWARDS_BALANCE="0"
 else
-    # Remove decimals.
-    REWARDS_BALANCE=${REWARDS_BALANCE%.*}
+    REWARDS_BALANCE=$(echo ${REWARDS_STATUS} | jq -r ".[] | select(.denom == \"${DENOM}\") | .amount" || true)
+    if [ -z "${REWARDS_BALANCE}" ] || [ "${REWARDS_BALANCE}" == "null" ]
+    then
+        # Empty response means zero balance.
+        REWARDS_BALANCE="0"
+    else
+        # Remove decimals.
+        REWARDS_BALANCE=${REWARDS_BALANCE%.*}
+    fi
+fi
+
+# Get available commission.
+VALIDATOR_ADDRESS=$(gaiacli keys show ${KEY} --bech val --address)
+COMMISSION_STATUS=$(gaiacli query distr commission ${VALIDATOR_ADDRESS} --chain-id ${CHAIN_ID} --node ${NODE} --output json)
+if [ "${COMMISSION_STATUS}" == "null" ]
+then
+    # Empty response means zero balance.
+    COMMISSION_BALANCE="0"
+else
+    COMMISSION_BALANCE=$(echo ${COMMISSION_STATUS} | jq -r ".[] | select(.denom == \"${DENOM}\") | .amount" || true)
+    if [ -z "${COMMISSION_BALANCE}" ]
+    then
+        # Empty response means zero balance.
+        COMMISSION_BALANCE="0"
+    else
+        # Remove decimals.
+        COMMISSION_BALANCE=${COMMISSION_BALANCE%.*}
+    fi
 fi
 
 # Calculate net balance and amount to delegate.
-NET_BALANCE=$((${ACCOUNT_BALANCE} + ${REWARDS_BALANCE}))
+NET_BALANCE=$((${ACCOUNT_BALANCE} + ${REWARDS_BALANCE} + ${COMMISSION_BALANCE}))
 if [ "${NET_BALANCE}" -gt $((${MINIMUM_DELEGATION_AMOUNT} + ${RESERVATION_AMOUNT})) ]
 then
     DELEGATION_AMOUNT=$((${NET_BALANCE} - ${RESERVATION_AMOUNT}))
@@ -88,10 +112,11 @@ echo "======================================================"
 echo "Account: ${KEY} (${KEY_TYPE})"
 echo "Address: ${ACCOUNT_ADDRESS}"
 echo "======================================================"
-echo "Account balance:   ${ACCOUNT_BALANCE}${DENOM}"
-echo "Available rewards: ${REWARDS_BALANCE}${DENOM}"
-echo "Net balance:       ${NET_BALANCE}${DENOM}"
-echo "Reservation:       ${RESERVATION_AMOUNT}${DENOM}"
+echo "Account balance:      ${ACCOUNT_BALANCE}${DENOM}"
+echo "Available rewards:    ${REWARDS_BALANCE}${DENOM}"
+echo "Available commission: ${COMMISSION_BALANCE}${DENOM}"
+echo "Net balance:          ${NET_BALANCE}${DENOM}"
+echo "Reservation:          ${RESERVATION_AMOUNT}${DENOM}"
 echo
 
 if [ "${DELEGATION_AMOUNT}" -eq 0 ]
@@ -117,11 +142,22 @@ then
 fi
 
 # Run transactions
-printf "Withdrawing rewards... "
-echo ${PASSPHRASE} | gaiacli tx distr withdraw-all-rewards --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS}
+if [ "${REWARDS_BALANCE}" -gt 0 ]
+then
+    printf "Withdrawing rewards... "
+    echo ${PASSPHRASE} | gaiacli tx distr withdraw-all-rewards --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS}
+    ACCOUNT_SEQUENCE=$((ACCOUNT_SEQUENCE + 1))
+fi
+
+if [ "${COMMISSION_BALANCE}" -gt 0 ]
+then
+    printf "Withdrawing commission... "
+    echo ${PASSPHRASE} | gaiacli tx distr withdraw-rewards ${VALIDATOR_ADDRESS} --commission --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS}
+    ACCOUNT_SEQUENCE=$((ACCOUNT_SEQUENCE + 1))
+fi
 
 printf "Delegating... "
-echo ${PASSPHRASE} | gaiacli tx staking delegate ${VALIDATOR} ${DELEGATION_AMOUNT}${DENOM} --yes --async --from ${KEY} --sequence $((ACCOUNT_SEQUENCE + 1)) --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS}
+echo ${PASSPHRASE} | gaiacli tx staking delegate ${VALIDATOR} ${DELEGATION_AMOUNT}${DENOM} --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS}
 
 echo
 echo "Have a Cosmic day!"
