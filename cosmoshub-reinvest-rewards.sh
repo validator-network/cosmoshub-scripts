@@ -30,7 +30,7 @@ VALIDATOR="cosmosvaloper1sxx9mszve0gaedz5ld7qdkjkfv8z992ax69k08"        # Defaul
 CHAIN_ID="cosmoshub-1"                          # Current chain id.
 NODE="https://cosmoshub.validator.network:443"  # Either run a local full node or choose one you trust.
 GAS_PRICES="0.025uatom"                         # Gas prices to pay for transaction.
-GAS_ADJUSTMENT="1.25"                           # Adjustment for estimated gas
+GAS_ADJUSTMENT="1.30"                           # Adjustment for estimated gas
 GAS_FLAGS="--gas auto --gas-prices ${GAS_PRICES} --gas-adjustment ${GAS_ADJUSTMENT}"
 
 ##############################################################################################################################################################
