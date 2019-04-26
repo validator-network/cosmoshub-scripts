@@ -6,7 +6,7 @@
 # The purpose of this script is to withdraw rewards (if any) and delegate them to an appointed validator. This way you can reinvest (compound) rewards.
 # Cosmos Hub does currently not support automatic compounding but this is planned: https://github.com/cosmos/cosmos-sdk/issues/3448
 
-# Requirements: gaiacli and jq must be in the path.
+# Requirements: gaiacli, curl and jq must be in the path.
 
 
 ##############################################################################################################################################################
@@ -27,7 +27,7 @@ VALIDATOR="cosmosvaloper1sxx9mszve0gaedz5ld7qdkjkfv8z992ax69k08"        # Defaul
 # Sensible defaults.
 ##############################################################################################################################################################
 
-CHAIN_ID="cosmoshub-2"                          # Current chain id.
+CHAIN_ID=""                                     # Current chain id. Empty means auto-detect.
 NODE="https://cosmoshub.validator.network:443"  # Either run a local full node or choose one you trust.
 GAS_PRICES="0.025uatom"                         # Gas prices to pay for transaction.
 GAS_ADJUSTMENT="1.30"                           # Adjustment for estimated gas
@@ -35,6 +35,13 @@ GAS_FLAGS="--gas auto --gas-prices ${GAS_PRICES} --gas-adjustment ${GAS_ADJUSTME
 
 ##############################################################################################################################################################
 
+
+# Auto-detect chain-id if not specified.
+if [ -z "${CHAIN_ID}" ]
+then
+  NODE_STATUS=$(curl -s --max-time 5 ${NODE}/status)
+  CHAIN_ID=$(echo ${NODE_STATUS} | jq -r ".result.node_info.network")
+fi
 
 # Use first command line argument in case KEY is not defined.
 if [ -z "${KEY}" ] && [ ! -z "${1}" ]
