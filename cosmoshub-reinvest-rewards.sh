@@ -149,22 +149,23 @@ then
 fi
 
 # Run transactions
+MEMO=$'Reinvesting rewards @ Validator\xF0\x9F\x8C\x90Network'
 if [ "${REWARDS_BALANCE}" -gt 0 ]
 then
     printf "Withdrawing rewards... "
-    echo ${PASSPHRASE} | gaiacli tx distr withdraw-all-rewards --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS} --memo $'Reinvesting rewards courtesy of Validator\xF0\x9F\x8C\x90Network'
+    echo ${PASSPHRASE} | gaiacli tx distr withdraw-all-rewards --yes --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS} --memo "${MEMO}" --broadcast-mode async
     ACCOUNT_SEQUENCE=$((ACCOUNT_SEQUENCE + 1))
 fi
 
 if [ "${COMMISSION_BALANCE}" -gt 0 ]
 then
     printf "Withdrawing commission... "
-    echo ${PASSPHRASE} | gaiacli tx distr withdraw-rewards ${VALIDATOR_ADDRESS} --commission --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS} --memo $'Reinvesting rewards courtesy of Validator\xF0\x9F\x8C\x90Network'
+    echo ${PASSPHRASE} | gaiacli tx distr withdraw-rewards ${VALIDATOR_ADDRESS} --commission --yes --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS} --memo "${MEMO}" --broadcast-mode async
     ACCOUNT_SEQUENCE=$((ACCOUNT_SEQUENCE + 1))
 fi
 
 printf "Delegating... "
-echo ${PASSPHRASE} | gaiacli tx staking delegate ${VALIDATOR} ${DELEGATION_AMOUNT}${DENOM} --yes --async --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS} --memo $'Reinvesting rewards courtesy of Validator\xF0\x9F\x8C\x90Network'
+echo ${PASSPHRASE} | gaiacli tx staking delegate ${VALIDATOR} ${DELEGATION_AMOUNT}${DENOM} --yes --from ${KEY} --sequence ${ACCOUNT_SEQUENCE} --chain-id ${CHAIN_ID} --node ${NODE} ${GAS_FLAGS} ${SIGNING_FLAGS} --memo "${MEMO}" --broadcast-mode async
 
 echo
 echo "Have a Cosmic day!"
